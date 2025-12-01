@@ -1,3 +1,9 @@
-FROM nginx:latest
-COPY index.html /usr/share/nginx/html/index.html
-EXPOSE 80
+FROM python:3.9-slim
+
+WORKDIR /app
+COPY app.py /app
+COPY requirements.txt /app
+
+RUN pip install --no-cache-dir -r requirements.txt
+
+CMD ["python", "app.py"]
