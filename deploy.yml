@@ -1,14 +1,32 @@
-- name: Deploy Python App in Docker
+- name: Trigger Jenkins and Deploy Docker Container
+  hosts: localhost
+  tasks:
+    - name: Trigger Jenkins build via API
+      uri:
+        url: "http://<jenkins-public-ip>:8080/job/build-docker-image/build?token=docker-build-token"
+        method: POST
+        user: "jenkins-user"
+        password: "jenkins-api-token"
+        force_basic_auth: yes
+        status_code: 201
+
+- name: Deploy Docker Image on EC2
   hosts: ec2
   become: yes
   tasks:
-    - name: Pull Docker image
-      command: docker pull your-dockerhub-username/python-flask-app:latest
+    - name: Copy Docker image tar from Jenkins to EC2
+      copy:
+        src: /var/lib/jenkins/python-flask-app.tar
+        dest: /tmp/python-flask-app.tar
+
+    - name: Load Docker image
+      command: docker load -i /tmp/python-flask-app.tar
 
     - name: Remove old container if exists
       command: docker rm -f flaskapp
       ignore_errors: yes
 
     - name: Run new container
-      command: docker run -d --name flaskapp -p 80:80 your-dockerhub-username/python-flask-app:latest
+      command: docker run -d --name flaskapp -p 80:80 python-flask-app:latest
+
 
