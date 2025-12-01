@@ -1,7 +1,14 @@
-stage('Deploy to EC2 using Ansible') {
-    steps {
-        sh '''
-            ansible-playbook -i /etc/ansible/hosts deploy.yml
-        '''
-    }
-}
+- name: Deploy Python App in Docker
+  hosts: ec2
+  become: yes
+  tasks:
+    - name: Pull Docker image
+      command: docker pull your-dockerhub-username/python-flask-app:latest
+
+    - name: Remove old container if exists
+      command: docker rm -f flaskapp
+      ignore_errors: yes
+
+    - name: Run new container
+      command: docker run -d --name flaskapp -p 80:80 your-dockerhub-username/python-flask-app:latest
+
