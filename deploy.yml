@@ -1,0 +1,8 @@
+
+stage('Deploy to EC2 using Ansible') {
+    steps {
+        sh '''
+            ansible-playbook -i /etc/ansible/hosts deploy.yml
+        '''
+    }
+}
